@@ -21,7 +21,7 @@ our $VERSION = '0.01';
 Utility functions to deal with Library of Congress Call Numbers
 
     use Library::CallNumber::LC;
-    my $a = Library::CallNumber::LC->new('A 123.4 .c11);
+    my $a = Library::CallNumber::LC->new('A 123.4 .c11');
     print $a->normalize; # normalizes for string comparisons.
     # gives 'A  012340C110'
     print $a->start_of_range; # same as "normalize"
