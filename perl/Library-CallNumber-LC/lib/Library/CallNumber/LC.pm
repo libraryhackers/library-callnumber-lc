@@ -277,7 +277,9 @@ You can find documentation for this module with the perldoc command.
     perldoc Library::CallNumber::LC
 
 
-You can also look for information at:
+You can also look for information at the Google Code page:
+
+  http://code.google.com/p/library-callnumber-lc/
 
 =head1 ACKNOWLEDGEMENTS
 
