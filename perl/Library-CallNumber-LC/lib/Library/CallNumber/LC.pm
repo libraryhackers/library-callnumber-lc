@@ -13,7 +13,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
@@ -31,6 +31,11 @@ Utility functions to deal with Library of Congress Call Numbers
     my @range = ($a->start_of_range, $b->end_of_range);
     # end of range is 'B  001100C130D119~999'
     
+    # Get components suitable for printing (e.g., number and decimal joined, leading dot on first cutter)
+    @comps = Library::CallNumber::LC->new('A 123.4 .c11')->components()
+    
+    # Same thing, but return empty strings for missing components (e.g., the cutters)
+    @comps = Library::CallNumber::LC->new('A 123.4 .c11')->components('true');
 
 =head1 ABSTRACT
 
@@ -127,6 +132,71 @@ sub new {
   };
   bless $self, $class;
   return $self;
+}
+
+
+=head2 components(boolean returnAll = false)
+
+  @comps = Library::CallNumber::LC->new('A 123.4 .c11')->components($returnAll)
+
+Returns an array of the individual components of the call number (or undef if it doesn't look like a call number).
+Components are:
+
+=over 4
+
+=item * alpha
+
+=item * number (numeric.decimal)
+
+=item * cutter1 
+
+=item * cutter2 
+
+=item * cutter3
+
+=item * "extra" (anything after the cutters)
+
+=back
+
+The optional argument <I returnAll> (false by default) determines whether or not empty components (e.g., 
+extra cutters) get a slot in the returned list. 
+
+=cut
+
+sub components {
+  my $self = shift;
+  my $returnAll = shift;
+  my $lc = $self->{callno};
+
+  return undef if ($lc =~ $weird);
+  return undef unless ($lc =~ $lcregex);
+
+
+  my ($alpha, $num, $dec, $c1alpha, $c1num, $c2alpha, $c2num,$c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+
+  #combine stuff if need be
+  
+  if ($dec) {
+    $num .= '.' . $dec;
+  }
+  
+  no warnings;
+  my $c1 = join('', $c1alpha, $c1num);
+  my $c2 = join('', $c2alpha, $c2num);
+  my $c3 = join('', $c3alpha, $c3num);
+  
+  $c1 = '.' . $c1 if ($c1 =~ /\S/);
+  use warnings;
+  
+  my @return;
+  foreach my $comp ($alpha, $num, $c1, $c2, $c3, $extra) {
+    $comp = '' unless (defined $comp);
+    next unless ($comp =~ /\S/ or $returnAll);
+    $comp =~ m/^\s*(.*?)\s*$/;
+    $comp = $1;
+    push @return, $comp;
+  }
+  return @return;
 }
 
 =head2 _normalize(string $lc, boolean $bottom)

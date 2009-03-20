@@ -1,5 +1,9 @@
 Revision history for Library-CallNumber-LC
 
-0.01    Date/time
+0.02    2009/03/20
+        Added method #components to return matched components in an array; 
+        suggested by Joe Atzberger on #code4lib
+
+0.01    2009/03/18
         First version, released on an unsuspecting world.
 
