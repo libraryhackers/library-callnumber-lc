@@ -1,9 +1,9 @@
 import unittest
-from test import basics
+from test import main
 
 def suite():
     test_suite = unittest.TestSuite()
-    test_suite.addTest(basics.suite())
+    test_suite.addTest(main.suite())
     return test_suite
 
 runner = unittest.TextTestRunner()
