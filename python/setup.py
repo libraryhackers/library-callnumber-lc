@@ -14,7 +14,7 @@ setup(
     name = 'callnumber',
     version = '0.1.0',  # remember to update callnumber/__init__.py on release!
     url = 'http://code.google.com/p/library-callnumber-lc/',
-    author = 'Mike Giarlo',
+    author = 'Michael J. Giarlo',
     author_email = 'leftwing@alumni.rutgers.edu',
     license = 'BSD',
     packages = find_packages(),
