@@ -2,8 +2,10 @@ import re
 
 __version__ = '0.1.0'
 
-lcregex = re.compile(r"""^
-        \s*
+weird = re.compile(r'^\s*[A-Z]+\s*\d+\.\d+\.\d+')
+
+lcregex = re.compile(r'''^
+         \s*
         (?:VIDEO-D)? # for video stuff
         (?:DVD-ROM)? # DVDs, obviously
         (?:CD-ROM)?  # CDs
@@ -20,28 +22,25 @@ lcregex = re.compile(r"""^
           \.? \s*     
           ([A-Z])      # cutter letter
           \s*
-          (\d+ | \Z)?        # cutter numbers
+          (\d+ | \Z)        # cutter numbers
         )?
         \s*
         (?:               # optional cutter
           \.? \s*     
           ([A-Z])      # cutter letter
           \s*
-          (\d+ | \Z)?        # cutter numbers
+          (\d+ | \Z)        # cutter numbers
         )?
         \s*
         (?:               # optional cutter
           \.? \s*     
           ([A-Z])      # cutter letter
           \s*
-          (\d+ | \Z)?        # cutter numbers
+          (\d+ | \Z)        # cutter numbers
         )?
         (\s+.+?)?        # everthing else
-        \s*$ """, re.VERBOSE)
-
-weird = re.compile(r"""
-  ^
-  \s*[A-Z]+\s*\d+\.\d+\.\d+ """, re.VERBOSE)
+        \s*$
+        ''', re.VERBOSE)
 
 # Change to make more readable/ more compact
 joiner = ''
@@ -77,9 +76,9 @@ class LC(object):
 
         comps = []
         for comp in (alpha, num, c1, c2, c3, extra):
-            if not re.search(r'\S', comp) or not returnAll:
+            if not re.search(r'\S', comp) and not returnAll:
                 continue    
-            comp = re.match(r'^\s*(.*?)\s*$', comp).groups(1)
+            comp = re.match(r'^\s*(.*?)\s*$', comp).group(1)
             comps.append(comp)
         return comps
 
@@ -108,7 +107,7 @@ class LC(object):
             return alpha
 
         enorm = re.sub(r'[^A-Z0-9]', '', extra)
-        num = '%04d' % num
+        num = '%04d' % int(num)
 
         topnorm = [
             alpha + topspace * (3 - len(alpha)),
@@ -148,7 +147,7 @@ class LC(object):
             end = topnorm.pop()
             if origs[i]:
                 if bottomout:
-                    end = joiner.join(bottomnorm[i:]
+                    end = joiner.join(bottomnorm[i:])
                 return joiner.join(topnorm) + joiner + end
 
     def normalize(self, lc=''):

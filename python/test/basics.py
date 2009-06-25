@@ -32,10 +32,7 @@ class BasicsTest(unittest.TestCase):
             parts = callnumber.LC(lccn).components()
             self.assertTrue(lccn, "lccn: %s (%s)" % (lccn, " | ".join(parts)))
             self.assertTrue(len(expected), len(parts))
-            i = 0
-            for unit in expected:
-                self.assertTrue(parts[i], unit)
-                i += 1
+            self.assertEqual(expected, parts)
 
 
 def suite():
