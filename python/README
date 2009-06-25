@@ -1,0 +1,27 @@
+DESCRIPTION
+-----------
+
+Normalize Library of Congress call numbers and/or create ranges of normalized call numbers. 
+
+
+INSTALLATION
+------------
+
+Run the test suite to make sure things are working:
+
+    	python test.py
+
+To install this module, run the following commands:
+
+        python setup.py install
+
+LICENSE
+-------
+
+BSD
+
+
+COPYRIGHT
+---------
+
+Copyright (C) 2009 Bill Dueber
