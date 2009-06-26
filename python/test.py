@@ -1,6 +1,7 @@
 import unittest
 from test import main
 
+
 def suite():
     test_suite = unittest.TestSuite()
     test_suite.addTest(main.suite())

@@ -12,7 +12,8 @@ classifiers = """
 
 setup(
     name = 'callnumber',
-    description = 'normalize Library of Congress call numbers and create ranges of normalized call numbers',
+    description = '''normalize Library of Congress call numbers and create
+ranges of call numbers''',
     version = '0.1.0',  # remember to update callnumber/__init__.py on release!
     url = 'http://code.google.com/p/library-callnumber-lc/',
     author = 'Michael J. Giarlo',

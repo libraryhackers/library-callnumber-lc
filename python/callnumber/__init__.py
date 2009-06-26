@@ -3,9 +3,9 @@ import re
 __version__ = '0.1.0'
 
 joiner = ''
-topspace = ' ' 
-bottomspace = '~' 
-topdigit = '0'   
+topspace = ' '
+bottomspace = '~'
+topdigit = '0'
 bottomdigit = '9'
 weird_re = re.compile(r'^\s*[A-Z]+\s*\d+\.\d+\.\d+')
 lccn_re = re.compile(r'''^
@@ -19,25 +19,25 @@ lccn_re = re.compile(r'''^
         \s*
         (?:         # optional numbers with optional decimal point
           (\d+)
-          (?:\s*?\.\s*?(\d+))? 
+          (?:\s*?\.\s*?(\d+))?
         )?
         \s*
         (?:               # optional cutter
-          \.? \s*     
+          \.? \s*
           ([A-Z])      # cutter letter
           \s*
           (\d+ | \Z)        # cutter numbers
         )?
         \s*
         (?:               # optional cutter
-          \.? \s*     
+          \.? \s*
           ([A-Z])      # cutter letter
           \s*
           (\d+ | \Z)        # cutter numbers
         )?
         \s*
         (?:               # optional cutter
-          \.? \s*     
+          \.? \s*
           ([A-Z])      # cutter letter
           \s*
           (\d+ | \Z)        # cutter numbers
@@ -45,6 +45,7 @@ lccn_re = re.compile(r'''^
         (\s+.+?)?        # everthing else
         \s*$
         ''', re.VERBOSE)
+
 
 def normalize(lc, bottom=False):
     lc = lc.upper()
@@ -58,12 +59,14 @@ def normalize(lc, bottom=False):
         return None
 
     origs = m.groups('')
-    (alpha, num, dec, c1alpha, c1num, c2alpha, c2num, c3alpha, c3num, extra) = origs
+    (alpha, num, dec, c1alpha, c1num,
+     c2alpha, c2num, c3alpha, c3num, extra) = origs
 
     if (len(dec) > 2):
         return None
 
-    if alpha and not (num or dec or c1alpha or c1num or c2alpha or c2num or c3alpha or c3num):
+    if alpha and not (num or dec or c1alpha or c1num or c2alpha \
+                          or c2num or c3alpha or c3num):
         if extra:
             return None
         if bottomout:
@@ -101,10 +104,10 @@ def normalize(lc, bottom=False):
 
     if extra:
         return joiner.join(topnorm)
-    
+
     topnorm.pop()
     bottomnorm.pop()
-    
+
     inds = range(1, 9)
     inds.reverse()
     for i in inds:
@@ -116,6 +119,7 @@ def normalize(lc, bottom=False):
 
 
 class LC(object):
+
     def __init__(self, callno):
         try:
             self.denormalized = callno.upper()
@@ -129,6 +133,14 @@ class LC(object):
     def __str__(self):
         return self.normalized
 
+    @property
+    def range_start(self):
+        return self.normalized
+
+    @property
+    def range_end(self):
+        return normalize(self.denormalized, True)
+
     def components(self, include_blanks=False):
         if re.match(weird_re, self.denormalized):
             return None
@@ -137,10 +149,11 @@ class LC(object):
         if not m:
             return None
 
-        (alpha, num, dec, c1alpha, c1num, c2alpha, c2num, c3alpha, c3num, extra) = m.groups('')
+        (alpha, num, dec, c1alpha, c1num, c2alpha, c2num,
+         c3alpha, c3num, extra) = m.groups('')
 
         if dec:
-          num += '.%s' % dec
+            num += '.%s' % dec
 
         c1 = ''.join((c1alpha, c1num))
         c2 = ''.join((c2alpha, c2num))
@@ -152,16 +165,7 @@ class LC(object):
         comps = []
         for comp in (alpha, num, c1, c2, c3, extra):
             if not re.search(r'\S', comp) and not include_blanks:
-                continue    
+                continue
             comp = re.match(r'^\s*(.*?)\s*$', comp).group(1)
             comps.append(comp)
         return comps
-
-    @property
-    def range_start(self):
-        return self.normalized
-
-    @property
-    def range_end(self):
-        return normalize(self.denormalized, True)
-

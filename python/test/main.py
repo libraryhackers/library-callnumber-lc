@@ -14,7 +14,9 @@ lccns_with_blanks = {
     'NX512.S85 A4': ['NX', '512', '.S85', 'A4', '', ''],
 }
 
+
 class CallNumberTest(unittest.TestCase):
+
     def test_00_simple_normalization(self):
         lccn = callnumber.LC('A')
         self.assertTrue(lccn.denormalized, 'A')
@@ -30,8 +32,10 @@ class CallNumberTest(unittest.TestCase):
 
     def test_03_module_method_with_cutters(self):
         self.assertTrue(callnumber.normalize('A 123.4 .c11'), 'A  012340C110')
-        self.assertTrue(callnumber.normalize('B11 .c13 .d11'), 'B  001100C130D110')
-        self.assertTrue(callnumber.normalize('B11 .c13 .d11'), 'B  001100C130D119~999')
+        self.assertTrue(callnumber.normalize('B11 .c13 .d11'),
+                        'B  001100C130D110')
+        self.assertTrue(callnumber.normalize('B11 .c13 .d11'),
+                        'B  001100C130D119~999')
 
     def test_04_simple_range(self):
         lccn = callnumber.LC('A')
