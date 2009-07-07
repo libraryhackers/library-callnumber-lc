@@ -1,10 +1,10 @@
 ---
 name: Library-CallNumber-LC
-version: 0.01
+version: 0.02
 author:
   - 'Bill Dueber <dueberb@umich.edu>'
 abstract: Deal with Library-of-congress call numbers
-license: bsd
+license: perl
 resources:
   license: http://dev.perl.org/licenses/
 build_requires:
@@ -12,7 +12,7 @@ build_requires:
 provides:
   Library::CallNumber::LC:
     file: lib/Library/CallNumber/LC.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.280801
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
