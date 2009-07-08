@@ -8,7 +8,8 @@ WriteMakefile
           'EXE_FILES' => [],
           'VERSION_FROM' => 'lib/Library/CallNumber/LC.pm',
           'PREREQ_PM' => {
-                           'Test::More' => 0
+                           'Test::More' => 0,
+                           'Math::BigInt' => 0
                          }
         )
 ;

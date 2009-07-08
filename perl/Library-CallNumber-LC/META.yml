@@ -8,6 +8,7 @@ license: perl
 resources:
   license: http://dev.perl.org/licenses/
 build_requires:
+  Math::BigInt: 0
   Test::More: 0
 provides:
   Library::CallNumber::LC:

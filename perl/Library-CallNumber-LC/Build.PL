@@ -9,6 +9,7 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Library/CallNumber/LC.pm',
     build_requires => {
         'Test::More' => 0,
+        'Math::BigInt' => 0,
     },
     add_to_cleanup      => [ 'Library-CallNumber-LC-*' ],
     create_makefile_pl => 'traditional',

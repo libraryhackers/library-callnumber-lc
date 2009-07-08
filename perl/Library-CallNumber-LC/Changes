@@ -1,5 +1,9 @@
 Revision history for Library-CallNumber-LC
 
+0.10    2009/07/08
+        Added "toLongInt" for possible use in a Trie field in Solr
+        Added third argument to _normalize to force full-length range-start normalization (for use in above)
+
 0.02    2009/03/20
         Added method #components to return matched components in an array; 
         suggested by Joe Atzberger on #code4lib
