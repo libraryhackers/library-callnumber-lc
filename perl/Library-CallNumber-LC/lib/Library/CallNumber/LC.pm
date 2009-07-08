@@ -210,6 +210,7 @@ sub _normalize {
   my $self = shift;
   my $lc = uc(shift);
   my $bottomout = shift;
+  my $fulllength = shift;
   
   return undef if ($lc =~ $weird);
   return undef unless ($lc =~ $lcregex);
@@ -233,7 +234,7 @@ sub _normalize {
     {
       return $alpha . $bottomspace x (3 - length($alpha));
     }
-    return $alpha;
+    return $alpha unless ($fulllength)
   }
 
   # Normalize each part and push them onto a stack
@@ -254,6 +255,7 @@ sub _normalize {
              $c3num . $topdigit x (3 - length($c3num)),         
              ' ' . $enorm,
             ); 
+  return join($join, @topnorm) if ($fulllength and not $bottomout);
 
   my @bottomnorm =($alpha . $bottomspace x (3 - length($alpha)), 
              $num . $bottomdigit x (4 - length($num)),
@@ -305,7 +307,15 @@ sub normalize {
   return $self->_normalize($lc, 0)
 }
 
-
+sub normalizeFullLength {
+  my $self = shift;
+  my $lc = shift;
+  $lc = $lc? uc($lc) : $self->{callno};
+  my $long =  $self->_normalize($lc, 0, 1);
+  $long =~ s/\s+$//;
+  return $long;
+  
+}
 
 =head2 start_of_range (alias for normalize)
 
