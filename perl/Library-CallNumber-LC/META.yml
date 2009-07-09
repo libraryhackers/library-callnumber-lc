@@ -1,6 +1,6 @@
 ---
 name: Library-CallNumber-LC
-version: 0.02
+version: 0.10
 author:
   - 'Bill Dueber <dueberb@umich.edu>'
 abstract: Deal with Library-of-congress call numbers
@@ -13,7 +13,7 @@ build_requires:
 provides:
   Library::CallNumber::LC:
     file: lib/Library/CallNumber/LC.pm
-    version: 0.02
+    version: 0.10
 generated_by: Module::Build version 0.280801
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

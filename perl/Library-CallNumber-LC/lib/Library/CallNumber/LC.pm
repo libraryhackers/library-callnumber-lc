@@ -9,7 +9,7 @@ Library::CallNumber::LC - Deal with Library-of-congress call numbers
 
 =head1 VERSION
 
-Version 0.01
+Version 0.10;
 
 =cut
 
