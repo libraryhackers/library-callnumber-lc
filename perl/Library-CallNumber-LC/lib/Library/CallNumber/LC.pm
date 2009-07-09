@@ -220,10 +220,10 @@ sub components {
   return @return;
 }
 
-=head2 _normalize(string $lc, boolean $bottom)
+=head2 _normalize(string $lc, boolean $bottom, boolean $fulllength)
 
-Utility function to perform normalization to both start and end
-of range, as well as output formats
+Base function to perform normalization. $bottomout, if true, forces a "range end". 
+$fulllength determines if the return value should be padded all the way out.
 
 =cut
 
@@ -242,31 +242,22 @@ sub _normalize {
   # We have some records that aren't LoC Call Numbers, but start like them, only with three digits in the decimal. Ditch them
   
   return undef if ($dec and (length($dec) > 2));
-  
-  # If we've got an extra, but *nothing else* except for the alpha, it's probably too weird to deal with
   no warnings;
-  if ($alpha and not ($num or $dec or $c1alpha or $c1num or $c2alpha or $c2num or$c3alpha or $c3num)) 
-  {
-    if ($extra) 
-    {
-      return undef;
-    }
-    if ($bottomout) 
-    {
-      return $alpha . $bottomspace x (3 - length($alpha));
-    }
-    return $alpha unless ($fulllength)
-  }
+  
 
   # Normalize each part and push them onto a stack
   
   my $enorm = $extra;
   $enorm =~ s/[^A-Z0-9]//g;
+  $enorm = ' ' . $enorm if ($enorm);
+  my $orignum = $num;
+  my $bottomnum = $num || '9999';
   $num = sprintf('%04d', $num);
+  $bottomnum = sprintf('%04d', $bottomnum);
   
   
   my @topnorm =($alpha . $topspace x (3 - length($alpha)), 
-             $num . $topdigit x (4 - length($num)),
+             $num,
              $dec . $topdigit x (2 - length($dec)),
              $c1alpha? $c1alpha : $topspace,
              $c1num . $topdigit x (3 - length($c1num)),
@@ -274,12 +265,15 @@ sub _normalize {
              $c2num . $topdigit x (3 - length($c2num)),
              $c3alpha? $c3alpha : $topspace,
              $c3num . $topdigit x (3 - length($c3num)),         
-             ' ' . $enorm,
+             $enorm,
             ); 
+  
+  # Do we want the whole thing? Just return it          
   return join($join, @topnorm) if ($fulllength and not $bottomout);
 
-  my @bottomnorm =($alpha . $bottomspace x (3 - length($alpha)), 
-             $num . $bottomdigit x (4 - length($num)),
+
+  my @bottomnorm =($alpha . $topspace x (3 - length($alpha)), 
+             $bottomnum,
              $dec . $bottomdigit x (2 - length($dec)),
              $c1alpha? $c1alpha : $bottomspace,
              $c1num . $bottomdigit x (3 - length($c1num)),
@@ -287,15 +281,34 @@ sub _normalize {
              $c2num . $bottomdigit x (3 - length($c2num)),
              $c3alpha? $c3alpha : $bottomspace,
              $c3num . $bottomdigit x (3 - length($c3num)),         
-             ' ' . $enorm,
+             $enorm,
             ); 
 
-  
+  # If we've got an extra, but *nothing else* except for the alpha, it's probably too weird to deal with
+  # Note use
+  if ($alpha and not ($orignum or $dec or $c1alpha or $c1num or $c2alpha or $c2num or$c3alpha or $c3num)) 
+  {
+    if ($extra) 
+    {
+      return undef;
+    }
+    if ($bottomout) 
+    {
+      if ($fulllength) {
+        return join($join, @bottomnorm);
+      } else {
+        return $alpha . $bottomspace;
+      }
+    }
+    return $alpha unless ($fulllength)
+  }
+
+
+  # Is it alread full length? Just return
   if ($extra) 
   {
     return join($join, @topnorm);
   }
-  
   
   pop @topnorm; pop @bottomnorm; # ditch the extra
   
@@ -306,9 +319,12 @@ sub _normalize {
     
     if ($origs[$i]) 
     {
-      if ($bottomout) 
-      {
-        $end = join($join, @bottomnorm[$i..$#bottomnorm]);
+      if ($bottomout) {
+        $end = join($join, @bottomnorm[$i..$#bottomnorm]);          
+      } else {
+        if ($i > 1) {
+          $end = $origs[$i];
+        }
       }
       return join($join, @topnorm) . $join .  $end;
     }
@@ -325,7 +341,7 @@ sub normalize {
   my $self = shift;
   my $lc = shift;
   $lc = $lc? uc($lc) : $self->{callno};
-  return $self->_normalize($lc, 0)
+  return $self->_normalize($lc, 0, 0)
 }
 
 =head2 normalizeFullLength($lc) 
@@ -364,9 +380,19 @@ sub end_of_range {
   my $self = shift;
   my $lc = shift;
   $lc = $lc? uc($lc) : $self->{callno};
-  return $self->_normalize($lc, 1);
+  return $self->_normalize($lc) . '~';
 }
 
+=head2 end_of_range_FullLength($lc) -- downshift to represent the end of a range, expanded out
+
+=cut
+
+sub end_of_range_FullLength {
+  my $self = shift;
+  my $lc = shift;
+  $lc = $lc? uc($lc) : $self->{callno};
+  return $self->_normalize($lc, 1, 1);
+}
 
 =head2 partialToLongInt($lc)
 
