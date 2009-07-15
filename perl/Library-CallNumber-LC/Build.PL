@@ -7,6 +7,9 @@ my $builder = Module::Build->new(
     license             => 'perl',
     dist_author         => 'Bill Dueber <dueberb@umich.edu>',
     dist_version_from   => 'lib/Library/CallNumber/LC.pm',
+    requires => {
+      'Math::BigInt' => 0,
+    },
     build_requires => {
         'Test::More' => 0,
         'Math::BigInt' => 0,
