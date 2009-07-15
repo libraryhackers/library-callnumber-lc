@@ -2,6 +2,7 @@ package Library::CallNumber::LC;
 
 use warnings;
 use strict;
+use Math::BigInt;
 
 =head1 NAME
 
@@ -401,13 +402,17 @@ not perfectly accurate.
 
 =cut
 
+my $minval = new Math::BigInt(2);
+$minval->bpow(32)->bneg; # -2*32;
+my $minvalstring = $minval->bstr;
+
 sub toLongInt {
   my $self = shift;
   my $lc = shift;
   $lc = $lc? uc($lc) : $self->{callno};
   #print "$lc\n";
   my $long = $self->normalizeFullLength($lc);
-  return undef unless ($long);
+  return $minvalstring unless ($long);
   $long = substr($long, 0, 16); # Just up through first cutter AAA 999 99 A 999 A 999
   $long = $long . ' ' x (16 - length($long)); # pad it if need be
   $long =~ /^(...)(.*)$/;
@@ -417,13 +422,17 @@ sub toLongInt {
   if (defined($intmap{$prefix})) { 
     push @rv, $intmap{$prefix}; 
   } else { 
-    warn "Unknown prefix '$prefix'\n";     return undef; 
+    warn "Unknown prefix '$prefix'\n";     
+    return $minvalstring; 
   }
   foreach my $char (split('', $rest)) { 
      push @rv, "$intmap{$char}"; 
    } 
 #   print "  $long => ", join('', @rv), "\n";
-   return join('', @rv);    
+   my $longint = Math::BigInt->new(join('', @rv));
+   $longint->badd($minval);
+   return $longint->bstr;
+   
 }
 
 
