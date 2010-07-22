@@ -6,7 +6,7 @@ use Math::BigInt;
 
 =head1 NAME
 
-Library::CallNumber::LC - Deal with Library-of-congress call numbers
+Library::CallNumber::LC - Deal with Library-of-Congress call numbers
 
 =head1 VERSION
 
@@ -141,7 +141,7 @@ my $bottomdigit = '9'; # should be 9
 =head1 FUNCTIONS
 
 =head2 new
-=head2 new($lc) -- create a new object, optionally passing in the inital string
+=head2 new($lc) -- create a new object, optionally passing in the initial string
 
 =cut
 
@@ -305,7 +305,7 @@ sub _normalize {
   }
 
 
-  # Is it alread full length? Just return
+  # Is it already full length? Just return
   if ($extra) 
   {
     return join($join, @topnorm);
@@ -347,7 +347,7 @@ sub normalize {
 
 =head2 normalizeFullLength($lc) 
 
-Force normaliztion to return the full-length string (as opposed to the shortest possible string) for ease
+Force normalization to return the full-length string (as opposed to the shortest possible string) for ease
 in converting to an int.
 
 =cut
@@ -397,7 +397,7 @@ sub end_of_range_FullLength {
 
 =head2 partialToLongInt($lc)
 
-Turn everything up to and including the secondp cutter into a long integer. Useful for fast range checks, although obviously
+Turn everything up to and including the second cutter into a long integer. Useful for fast range checks, although obviously
 not perfectly accurate.
 
 =cut
@@ -443,11 +443,10 @@ Bill Dueber, C<< <dueberb at umich.edu> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-library-callnumber-lc at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Library-CallNumber-LC>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
+Please report any bugs or feature requests through the web interface at
+L<http://code.google.com/p/library-callnumber-lc/issues/list>.  I will be
+notified, and then you'll automatically be notified of progress on your bug as
+I make changes.
 
 
 =head1 SUPPORT
@@ -469,7 +468,7 @@ You can also look for information at the Google Code page:
 Copyright 2009 Bill Dueber, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as the new BSD licsense as descirbed at 
+under the same terms as the new BSD licsense as described at 
 http://www.opensource.org/licenses/bsd-license.php
 
 
