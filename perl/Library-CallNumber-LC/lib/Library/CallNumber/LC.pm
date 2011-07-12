@@ -64,24 +64,11 @@ Regexp constants to deal with matching LC and variants
 
 =cut
 
-# Set up the mapping for longints 
+# Set up the prefix mapping for longints 
 my %intmap; 
 my $i = 0;
-# First the characters my $i = 0; 
-foreach my $char (' ', 'A'..'Z', '~') { 
-  $intmap{$char} = sprintf('%02d', $i); 
-  $i++; 
-} 
- 
-# ...and the digits 
-foreach my $char (0..9) { 
-  $intmap{$char} = $char; 
-}
-
-# And now the prefixes
-$i = 0;
 foreach my $prefix qw(a aa ab abc ac ae ag ah ai al am an anl ao ap aq arx as at aug aw awo ay az b bc bd bf bg bh bj bl bm bn bp bq br bs bt bu bv bx c cb cc cd ce cg cis cj cmh cmm cn cr cs ct cz d da daa daw db dc dd de df dff dg dh dj djk dk dkj dl doc dp dq dr ds dt dth du dx e ea eb ec ed ee ek ep epa ex f fb fc fem fg fj fnd fp fsd ft ful g ga gb gc gda ge gf gh gn gr gs gt gv h ha hb hc hcg hd he hf hfs hg hh hhg hj hjc hm hmk hn hq hs ht hv hx i ia ib iid ill ilm in ioe ip j ja jan jb jc jf jg jh jhe jj jk jkc jl jln jn jq js jv jx jz k kb kbm kbp kbq kbr kbu kc kd kdc kde kdg kdk kds kdz ke kea keb kem ken keo keq kes kf kfa kfc kfd kff kfg kfh kfi kfk kfl kfm kfn kfo kfp kfr kfs kft kfu kfv kfw kfx kfz kg kga kgb kgc kgd kge kgf kgg kgh kgj kgk kgl kgn kgq kgs kgt kgv kgx kh kha khc khd khf khh khk khp khq khu khw kit kj kja kjc kje kjg kjj kjk kjm kjn kjp kjq kjr kjs kjt kjv kjw kk kka kkb kkc kke kkf kkg kkh kki kkj kkm kkn kkp kkq kkr kks kkt kkv kkw kkx kky kkz kl kla klb kld kle klf klg klh klm kln klp klr kls klt klv klw km kmc kme kmf kmh kmj kmk kml kmm kmn kmo kmp kmq kmt kmu kmv kmx kn knc knd kne knf kng knh knk knl knm knn knp knq knr kns knt knu knw knx kny kp kpa kpc kpe kpf kpg kph kpj kpk kpl kpm kpp kps kpt kpv kpw kq kqc kqe kqg kqj kqk kqp kqw krb krc krg krm krn krp krr krs kru krv krx ks ksa ksc ksh ksj ksk ksl ksp kss kst ksv ksw ksx ksy kta ktd ktg ktj ktk ktl ktq ktr ktt ktu ktv ktw ktx kty ktz ku kuc kuq kvc kvf kvm kvn kvp kvq kvr kvs kvw kwc kwg kwh kwl kwp kwr kww kwx kz kza kzd l la law lb lc ld le lf lg lh lj ll ln lrm lt lv m may mb mc me mf mh mkl ml mpc mr ms mt my n na nat nax nb nc nd nda nds ne ner new ng nh nk nl nmb nn no nt nv nx ok onc p pa pb pc pcr pd pe pf pg ph phd pj pjc pk pl pm pn pnb pp pq pr ps pt pz q qa qb qc qd qe qh qk ql qm qp qr qry qu qv r ra rb rbw rc rcc rd re ref res rf rg rh rj rk rl rm rn rp rs rt rv rx rz s sb sd see sf sfk sgv sh sk sn sql sw t ta tc td tdd te tf tg tgg th tj tk tl tn tnj to tp tr ts tt tx tz u ua ub uc ud ue uf ug uh un use v va vb vc vd ve vf vg vk vla vm w wq x xp xx y yh yl yy z za zhn zz zzz ) {
-  $intmap{$prefix} = sprintf("%02d", $i);
+  $intmap{$prefix} = $i;
   $i++;
 }
 
@@ -131,11 +118,8 @@ my $weird = qr/
 /x;
 
 # Change to make more readable/ more compact
-my $join = '';
 my $topspace = ' '; # must sort before 'A'
 my $bottomspace = '~'; # must sort after 'Z' and '9'
-my $topdigit = '0';    # should be zero
-my $bottomdigit = '9'; # should be 9
 
 
 =head1 FUNCTIONS
@@ -223,114 +207,37 @@ sub components {
 
 =head2 _normalize(string $lc, boolean $bottom, boolean $fulllength)
 
-Base function to perform normalization. $bottomout, if true, forces a "range end". 
-$fulllength determines if the return value should be padded all the way out.
+Base function to perform normalization.
 
 =cut
 
 sub _normalize {
   my $self = shift;
   my $lc = uc(shift);
-  my $bottomout = shift;
-  my $fulllength = shift;
   
-  return undef if ($lc =~ $weird);
+#  return undef if ($lc =~ $weird);
   return undef unless ($lc =~ $lcregex);
   
-  my @origs = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
-  my ($alpha, $num, $dec, $c1alpha, $c1num, $c2alpha, $c2num,$c3alpha, $c3num, $extra) = @origs;
+  my ($alpha, $num, $dec, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 
-  # We have some records that aren't LoC Call Numbers, but start like them, only with three digits in the decimal. Ditch them
-  
-  return undef if ($dec and (length($dec) > 2));
   no warnings;
-  
+  my $class = $alpha;
+  $class .= sprintf('%04s', $num) if $num;
+  $class .= $dec if $dec;
+  my $c1 = $c1alpha.$c1num;
+  my $c2 = $c2alpha.$c2num;
+  my $c3 = $c3alpha.$c3num;
 
-  # Normalize each part and push them onto a stack
-  
-  my $enorm = $extra;
-  $enorm =~ s/[^A-Z0-9]//g;
-  $enorm = ' ' . $enorm if ($enorm);
-  my $orignum = $num;
-  my $bottomnum = $num || '9999';
-  $num = sprintf('%04d', $num);
-  $bottomnum = sprintf('%04d', $bottomnum);
-  
-  
-  my @topnorm =($alpha . $topspace x (3 - length($alpha)), 
-             $num,
-             $dec . $topdigit x (2 - length($dec)),
-             $c1alpha? $c1alpha : $topspace,
-             $c1num . $topdigit x (3 - length($c1num)),
-             $c2alpha? $c2alpha : $topspace,
-             $c2num . $topdigit x (3 - length($c2num)),
-             $c3alpha? $c3alpha : $topspace,
-             $c3num . $topdigit x (3 - length($c3num)),         
-             $enorm,
-            ); 
-  
-  # Do we want the whole thing? Just return it          
-  return join($join, @topnorm) if ($fulllength and not $bottomout);
+  # normalize extra (most commonly years/numbering, benefits from padding)
+  # this could be reduced to a four digit pad, as very, very few numbers
+  # reach 10000, but we'll be conservative here (for now)
+  $extra =~ s/^\s+//g;
+  $extra =~ s/\.\s+/./g;
+  $extra =~ s/(\d)\s*-\s*(\d)/$1-$2/g;
+  $extra =~ s/(\d+)/sprintf("%05s", $1)/ge;
+  $extra = $topspace . $extra; # give the extra less 'weight' for falling down the list
 
-
-  my @bottomnorm =($alpha . $topspace x (3 - length($alpha)), 
-             $bottomnum,
-             $dec . $bottomdigit x (2 - length($dec)),
-             $c1alpha? $c1alpha : $bottomspace,
-             $c1num . $bottomdigit x (3 - length($c1num)),
-             $c2alpha? $c2alpha : $bottomspace,
-             $c2num . $bottomdigit x (3 - length($c2num)),
-             $c3alpha? $c3alpha : $bottomspace,
-             $c3num . $bottomdigit x (3 - length($c3num)),         
-             $enorm,
-            ); 
-
-  # If we've got an extra, but *nothing else* except for the alpha, it's probably too weird to deal with
-  # Note use
-  if ($alpha and not ($orignum or $dec or $c1alpha or $c1num or $c2alpha or $c2num or$c3alpha or $c3num)) 
-  {
-    if ($extra) 
-    {
-      return undef;
-    }
-    if ($bottomout) 
-    {
-      if ($fulllength) {
-        return join($join, @bottomnorm);
-      } else {
-        return $alpha . $bottomspace;
-      }
-    }
-    return $alpha unless ($fulllength)
-  }
-
-
-  # Is it already full length? Just return
-  if ($extra) 
-  {
-    return join($join, @topnorm);
-  }
-  
-  pop @topnorm; pop @bottomnorm; # ditch the extra
-  
-  # foreach my $i ($c3num, $c3alpha, $c2num, $c2alpha, $c1num, $c1alpha, $dec, $num) {
-  for (my $i = 8; $i >= 1; $i--) 
-  {
-    my $end = pop @topnorm;
-    
-    if ($origs[$i]) 
-    {
-      if ($bottomout) {
-        $end = join($join, @bottomnorm[$i..$#bottomnorm]);          
-      } else {
-        if ($i > 1) {
-          $end = $origs[$i];
-        }
-      }
-      return join($join, @topnorm) . $join .  $end;
-    }
-  }
-  use warnings;
+  return join($topspace, grep {/\S/} ($class, $c1, $c2, $c3, $extra));
 }
 
 =head2 normalize() -- normalize the callno in the current object as a sortable string
@@ -342,26 +249,7 @@ sub normalize {
   my $self = shift;
   my $lc = shift;
   $lc = $lc? uc($lc) : $self->{callno};
-  return $self->_normalize($lc, 0, 0)
-}
-
-=head2 normalizeFullLength($lc) 
-
-Force normalization to return the full-length string (as opposed to the shortest possible string) for ease
-in converting to an int.
-
-=cut
-
-sub normalizeFullLength {
-  my $self = shift;
-  my $lc = shift;
-  $lc = $lc? uc($lc) : $self->{callno};
-  my $long =  $self->_normalize($lc, 0, 1);
-  unless ($long) {
-    return undef;
-  }
-  $long =~ s/\s+$//;
-  return $long;
+  return $self->_normalize($lc)
 }
 
 =head2 start_of_range (alias for normalize)
@@ -384,53 +272,67 @@ sub end_of_range {
   return $self->_normalize($lc) . '~';
 }
 
-=head2 end_of_range_FullLength($lc) -- downshift to represent the end of a range, expanded out
+=head2 toLongInt($lc, $num_digits)
+
+Attempt to turn a call number into an integer value. Possibly useful for fast range checks, although obviously not perfectly accurate. Optional argument I<$num_digits> can be used to control the number of digits used, and therefore the precision of the results.
 
 =cut
 
-sub end_of_range_FullLength {
-  my $self = shift;
-  my $lc = shift;
-  $lc = $lc? uc($lc) : $self->{callno};
-  return $self->_normalize($lc, 1, 1);
-}
-
-=head2 partialToLongInt($lc)
-
-Turn everything up to and including the second cutter into a long integer. Useful for fast range checks, although obviously
-not perfectly accurate.
-
-=cut
-
-my $minval = new Math::BigInt(2);
-$minval->bpow(32)->bneg; # -2*32;
+my $minval = new Math::BigInt('0'); # set to zero until this code matures
 my $minvalstring = $minval->bstr;
 
+# this is a work in progress, with room for improvement in both exception
+# logic and overall economy of bits
 sub toLongInt {
   my $self = shift;
   my $lc = shift;
-  $lc = $lc? uc($lc) : $self->{callno};
+  my $num_digits = shift || 19; # 19 is a max-fit for 64-bits within our scope
+
   #print "$lc\n";
-  my $long = $self->normalizeFullLength($lc);
+  my $topspace_ord = ord($topspace);
+  my $long = $self->normalize($lc);
+
   return $minvalstring unless ($long);
-  $long = substr($long, 0, 16); # Just up through first cutter AAA 999 99 A 999 A 999
-  $long = $long . ' ' x (16 - length($long)); # pad it if need be
-  $long =~ /^(...)(.*)$/;
-  my ($prefix, $rest) = (lc($1), $2);
-  $prefix =~ s/\s+$//;
-  my @rv; 
-  if (defined($intmap{$prefix})) { 
-    push @rv, $intmap{$prefix}; 
+
+  my ($alpha, $num, $rest);
+  if ($long =~ /^([A-Z]+)(\d{4})(.*)$/) { # we have a 'full' call number
+    ($alpha, $num, $rest) = (lc($1), $2, $3);
+  } elsif ($long =~ /^([A-Z]+)(.*)$/) { # numberless class; generally invalid, but let it slide for now 
+    ($alpha, $rest) = (lc($1), $2);
+    if ($rest =~ /^~/) { # bottomed-out class
+        $num = '9999';
+    } else {
+        $num = '0000';
+    }
+  }
+  my $class_int_string = '';
+  if (defined($intmap{$alpha})) { 
+    $class_int_string .= $intmap{$alpha} . $num; 
   } else { 
-    warn "Unknown prefix '$prefix'\n";     
+    warn "Unknown prefix '$alpha'\n";     
     return $minvalstring; 
   }
+  my $rest_int_string = '';
+  my $bottomout;
   foreach my $char (split('', $rest)) { 
-     push @rv, "$intmap{$char}"; 
-   } 
+    if ($char eq $bottomspace) {
+      $bottomout = 1; 
+      last;
+    }
+    $rest_int_string .= sprintf('%02d', ord($char) - $topspace_ord); 
+  } 
+
+  $rest_int_string = substr($rest_int_string, 0, $num_digits - 7); # Reserve first seven digits for $alpha and $num
+  if ($bottomout) {
+    $rest_int_string .= '9' x (($num_digits - 7) - length($rest_int_string)); # pad it if need be
+  } else {
+    $rest_int_string .= '0' x (($num_digits - 7) - length($rest_int_string)); # pad it if need be
+  }
+
 #   print "  $long => ", join('', @rv), "\n";
-   my $longint = Math::BigInt->new(join('', @rv));
+   my $longint = Math::BigInt->new($class_int_string . $rest_int_string);
    $longint->badd($minval);
+#   warn "\n\n".$self->_normalize($lc)." = ".$longint->bstr." ( $class_int_string + $rest_int_string) \n\n";
    return $longint->bstr;
    
 }
