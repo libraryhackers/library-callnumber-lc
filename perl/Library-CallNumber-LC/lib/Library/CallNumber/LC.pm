@@ -79,6 +79,8 @@ my $lcregex = qr/^
           (\d+)
           (?:\s*?\.\s*?(\d+))? 
         )?
+        \s*         
+        (\d+[stndrh]*)? # optional extra numbering including suffixes (1st, 2nd, etc.)
         \s*
         (?:               # optional cutter
           \.? \s*     
@@ -228,7 +230,7 @@ sub components {
   return undef unless ($lc =~ $lcregex);
 
 
-  my ($alpha, $num, $dec, $c1alpha, $c1num, $c2alpha, $c2num,$c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+  my ($alpha, $num, $dec, $othernum, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
 
   #combine stuff if need be
   
@@ -245,7 +247,7 @@ sub components {
   use warnings;
   
   my @return;
-  foreach my $comp ($alpha, $num, $c1, $c2, $c3, $extra) {
+  foreach my $comp ($alpha, $num, $othernum, $c1, $c2, $c3, $extra) {
     $comp = '' unless (defined $comp);
     next unless ($comp =~ /\S/ or $returnAll);
     $comp =~ m/^\s*(.*?)\s*$/;
@@ -270,7 +272,7 @@ sub _normalize {
 #  return undef if ($lc =~ $weird);
   return undef unless ($lc =~ $lcregex);
   
-  my ($alpha, $num, $dec, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+  my ($alpha, $num, $dec, $othernum, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
 
   no warnings;
   my $class = $alpha;
@@ -288,8 +290,11 @@ sub _normalize {
   $extra =~ s/(\d)\s*-\s*(\d)/$1-$2/g;
   $extra =~ s/(\d+)/sprintf("%05s", $1)/ge;
   $extra = $topper . $extra if ($extra ne ''); # give the extra less 'weight' for falling down the list
+  
+  # pad out othernum (again, conservatively)
+  $othernum =~ s/(\d+)/sprintf("%05s", $1)/ge;
 
-  return join($topper, grep {/\S/} ($class, $c1, $c2, $c3, $extra));
+  return join($topper, grep {/\S/} ($class, $othernum, $c1, $c2, $c3, $extra));
 }
 
 =head2 normalize([call_number_text])

@@ -19,7 +19,7 @@ foreach my $lccn (sort keys %$lccns) {
     my @expected = @{$lccns->{$lccn}};
     my @parts = Library::CallNumber::LC->new($lccn)->components;
     ok($lccn, "lccn: $lccn (" . join(" | ", @parts) . ')');
-    is(scalar(@expected), scalar(@parts), "$lccn: Correctly produced " . scalar(@expected) . " parts");
+    is(scalar(@parts), scalar(@expected), "$lccn: Correctly produced " . scalar(@expected) . " parts");
     my $i = 0;
     foreach my $unit (@expected) {
       is($parts[$i], $unit, "$lccn: Correctly matched $unit at position $i");
