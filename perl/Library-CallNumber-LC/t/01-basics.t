@@ -8,6 +8,11 @@ my $a = Library::CallNumber::LC->new('A');
 is($a->normalize, 'A', "Basic normalization");
 is($a->normalize, $a->start_of_range, "Equvalent functions");
 is($a->end_of_range, 'A~', "End of range");
+$a->call_number('B11 A543');
+is($a->normalize, 'B0011 A543', "Change call number");
+is($a->call_number, 'B11 A543', "Retrieve call number text");
+is($a->topper, ' ', "Retrieve 'topper'");
+is($a->bottomer, '~', "Retrieve 'bottomer'");
 
 my $LC = Library::CallNumber::LC->new();
 is($LC->normalize('A11.1'), 'A00111', "Basic normalization");
@@ -20,6 +25,29 @@ is($a->normalize('B11 A543 B6'), 'B0011 A543 B6', "Two cutters");
 is($a->start_of_range('B11 .c13 .d11'), 'B0011 C13 D11', "Two cutters start");
 is($a->end_of_range('B11 .c13 .d11'), 'B0011 C13 D11~', "Two cutters end");
 
+# try some alternate sort chars
+
+# instance level
+$a->topper('!');
+$a->bottomer('_');
+is($a->normalize('A0610.5 C75 M5'), 'A06105!C75!M5', "Instance level 'topper' setting");
+is($a->end_of_range('A610.5'), 'A06105_', "Instance level 'bottomer' setting");
+# instance level at construction
+my $b = Library::CallNumber::LC->new('A123 C44', '$', ']');
+is($b->end_of_range, 'A0123$C44]', "Instance level 'topper'/'bottomer'");
+# class level
+Library::CallNumber::LC->topper('#');
+Library::CallNumber::LC->bottomer('^');
+is(Library::CallNumber::LC->normalize('A0610.5 C75 M5'), 'A06105#C75#M5', "Class level 'topper' setting");
+is(Library::CallNumber::LC->end_of_range('A610.5'), 'A06105^', "Class level 'bottomer' setting");
+
+# reset back to defaults
+Library::CallNumber::LC->topper(' ');
+Library::CallNumber::LC->bottomer('~');
+$a->topper(' ');
+$a->bottomer('~');
+is($a->normalize('A0610.5 C75 M5'), 'A06105 C75 M5', "Instance level 'topper' setting");
+is(Library::CallNumber::LC->normalize('A0610.5 C75 M5'), 'A06105 C75 M5', "Class level 'topper' setting");
 
 my @test = (
  "a 0",

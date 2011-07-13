@@ -10,11 +10,11 @@ Library::CallNumber::LC - Deal with Library-of-Congress call numbers
 
 =head1 VERSION
 
-Version 0.10;
+Version 0.20;
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.20';
 
 
 =head1 SYNOPSIS
@@ -117,15 +117,15 @@ my $weird = qr/
   \s*[A-Z]+\s*\d+\.\d+\.\d+
 /x;
 
-# Change to make more readable/ more compact
-my $topspace = ' '; # must sort before 'A'
-my $bottomspace = '~'; # must sort after 'Z' and '9'
+# Class variables for top/bottom sort chars
+my $Topper = ' '; # must sort before 'A'
+my $Bottomer = '~'; # must sort after 'Z' and '9'
 
 
-=head1 FUNCTIONS
+=head1 CONSTRUCTORS
 
 =head2 new
-=head2 new($lc) -- create a new object, optionally passing in the initial string
+=head2 new(call_number_text, topper_character, bottomer_character) -- create a new object, optionally passing in the initial string, a "topper", and a "bottomer" (explained below)
 
 =cut
 
@@ -133,13 +133,76 @@ sub new {
   my $proto = shift;
   my $class = ref($proto) || $proto;
   my $lc = shift || '';
+  my $topper = shift;
+  $topper = $Topper if !defined($topper); # ZERO is false but might be a reasonable value, so we need this more specific check
+  my $bottomer = shift || $Bottomer;
   my $self = {
     callno => uc($lc),
+    topper => $topper,
+    bottomer => $bottomer
   };
   bless $self, $class;
   return $self;
 }
 
+
+=head1 BASIC ACCESSORS
+
+=head2 call_number
+
+=head2 call_number(call_number_text)
+
+The text of the call number we are dealing with.
+
+=cut
+
+sub call_number {
+  my $self = shift;
+  if (@_) { $self->{callno} = uc(shift) }
+  return $self->{callno};
+}
+
+=head2 topper
+
+=head2 topper(character)
+
+Specify which character occupies the 'always-sort-to-the-top' slots in the sort keys.  Defaults to the SPACE character, but can reasonably be anything with an ASCII value lower than 48 (i.e. the 'zero' character, '0').  This can function as either a class or instance method depending on need.
+
+=cut
+
+sub topper {
+  my $self = shift;
+  my $topper = shift;
+  if (ref $self) {
+    $self->{topper} = $topper if $topper; # just myself
+    return $self->{topper};
+  } else {
+    $Topper = $topper if $topper; # whole class
+    return $Topper;
+  }
+}
+
+=head2 bottomer
+
+=head2 bottomer(character)
+
+Specify which character occupies the 'always-sort-to-the-bottom' slots in the sort keys.  Defaults to the TILDE character, but can reasonably be anything with an ASCII value higher than 90 (i.e. 'Z').  This can function as either a class or instance method depending on need.
+
+=cut
+
+sub bottomer {
+  my $self = shift;
+  my $bottomer = shift;
+  if (ref $self) {
+    $self->{bottomer} = $bottomer if $bottomer; # just myself
+    return $self->{bottomer};
+  } else {
+    $Bottomer = $bottomer if $bottomer; # whole class
+    return $Bottomer;
+  }
+}
+
+=head1 OTHER METHODS
 
 =head2 components(boolean returnAll = false)
 
@@ -214,7 +277,9 @@ Base function to perform normalization.
 sub _normalize {
   my $self = shift;
   my $lc = uc(shift);
-  
+
+  my $topper = $self->topper;
+
 #  return undef if ($lc =~ $weird);
   return undef unless ($lc =~ $lcregex);
   
@@ -235,12 +300,13 @@ sub _normalize {
   $extra =~ s/\.\s+/./g;
   $extra =~ s/(\d)\s*-\s*(\d)/$1-$2/g;
   $extra =~ s/(\d+)/sprintf("%05s", $1)/ge;
-  $extra = $topspace . $extra; # give the extra less 'weight' for falling down the list
+  $extra = $topper . $extra if ($extra ne ''); # give the extra less 'weight' for falling down the list
 
-  return join($topspace, grep {/\S/} ($class, $c1, $c2, $c3, $extra));
+  return join($topper, grep {/\S/} ($class, $c1, $c2, $c3, $extra));
 }
 
 =head2 normalize() -- normalize the callno in the current object as a sortable string
+
 =head2 normalize($lc) -- normalize the passed callno as a sortable string
 
 =cut
@@ -269,7 +335,8 @@ sub end_of_range {
   my $self = shift;
   my $lc = shift;
   $lc = $lc? uc($lc) : $self->{callno};
-  return $self->_normalize($lc) . '~';
+  my $bottomer = $self->bottomer;
+  return $self->_normalize($lc) . $bottomer;
 }
 
 =head2 toLongInt($lc, $num_digits)
@@ -288,8 +355,11 @@ sub toLongInt {
   my $lc = shift;
   my $num_digits = shift || 19; # 19 is a max-fit for 64-bits within our scope
 
+  my $topper = $self->topper;
+  my $bottomer = $self->bottomer;
+
   #print "$lc\n";
-  my $topspace_ord = ord($topspace);
+  my $topper_ord = ord($topper);
   my $long = $self->normalize($lc);
 
   return $minvalstring unless ($long);
@@ -299,7 +369,7 @@ sub toLongInt {
     ($alpha, $num, $rest) = (lc($1), $2, $3);
   } elsif ($long =~ /^([A-Z]+)(.*)$/) { # numberless class; generally invalid, but let it slide for now 
     ($alpha, $rest) = (lc($1), $2);
-    if ($rest =~ /^~/) { # bottomed-out class
+    if ($rest =~ /^$bottomer/) { # bottomed-out class
         $num = '9999';
     } else {
         $num = '0000';
@@ -315,11 +385,11 @@ sub toLongInt {
   my $rest_int_string = '';
   my $bottomout;
   foreach my $char (split('', $rest)) { 
-    if ($char eq $bottomspace) {
+    if ($char eq $bottomer) {
       $bottomout = 1; 
       last;
     }
-    $rest_int_string .= sprintf('%02d', ord($char) - $topspace_ord); 
+    $rest_int_string .= sprintf('%02d', ord($char) - $topper_ord); 
   } 
 
   $rest_int_string = substr($rest_int_string, 0, $num_digits - 7); # Reserve first seven digits for $alpha and $num
@@ -341,7 +411,8 @@ sub toLongInt {
 
 =head1 AUTHOR
 
-Bill Dueber, C<< <dueberb at umich.edu> >>
+Current Maintainer: Dan Wells, C<< <dbw2 at calvin.edu> >>
+Original Author: Bill Dueber, C<< <dueberb at umich.edu> >>
 
 =head1 BUGS
 
@@ -368,6 +439,7 @@ You can also look for information at the Google Code page:
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2009 Bill Dueber, all rights reserved.
+Copyright 2011 Dan Wells, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as the new BSD licsense as described at 
