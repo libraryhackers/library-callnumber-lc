@@ -24,13 +24,13 @@ Utility functions to deal with Library of Congress Call Numbers
     use Library::CallNumber::LC;
     my $a = Library::CallNumber::LC->new('A 123.4 .c11');
     print $a->normalize; # normalizes for string comparisons.
-    # gives 'A  012340C110'
+    # gives 'A01234 C11'
     print $a->start_of_range; # same as "normalize"
     my $b = Library::CallNumber::LC->new('B11 .c13 .d11');
     print $b->normalize;
-    # gives 'B  001100C130D110'
+    # gives 'B0011 C13 D11'
     my @range = ($a->start_of_range, $b->end_of_range);
-    # end of range is 'B  001100C130D119~999'
+    # end of range is 'B0011 C13 D11~'
     
     # Get components suitable for printing (e.g., number and decimal joined, leading dot on first cutter)
     @comps = Library::CallNumber::LC->new('A 123.4 .c11')->components()
@@ -46,21 +46,13 @@ Library::CallNumber::LC is mostly designed to do call number normalization, with
 
 =item * The normalized call numbers are comparable with each other, for proper sorting
 
-=item * The normalized call number is a short as possible, so left-anchored wildcard searches are possible
-(e.g., searching on "A11*" should give you all the A11 call numbers)
+=item * The normalized call number is a short as possible, so left-anchored wildcard searches are possible (e.g., searching on "A11*" should give you all the A11 call numbers)
 
-=item * A range defined by start_of_range and end_of_range should be correct, assuming that the string given for 
-the end of the range is, in fact, a left prefix.
+=item * A range defined by start_of_range and end_of_range should be correct, assuming that the string given for the end of the range is, in fact, a left prefix.
 
 =back
 
-That last point needs some explanation. The idea is that if someone gives a range of, say, A-AZ, what
-they really mean is A - AZ9999.99. The end_of_range method pads the given call number out to three
-cutters if need be. There is no attempt to make end_of_range normalization correspond to anything in real life.
-
-=head1 CONSTANTS
-
-Regexp constants to deal with matching LC and variants
+That last point needs some explanation. The idea is that if someone gives a range of, say, A-AZ, what they really mean is A - AZ9999.99. The end_of_range method generates a key which lies immediately beyond the last possible key for a given starting point. There is no attempt to make end_of_range normalization correspond to anything in real life.
 
 =cut
 
@@ -71,6 +63,8 @@ foreach my $prefix qw(a aa ab abc ac ae ag ah ai al am an anl ao ap aq arx as at
   $intmap{$prefix} = $i;
   $i++;
 }
+
+# Regexp constants to deal with matching LC and variants
 
 my $lcregex = qr/^
         \s*
@@ -124,8 +118,7 @@ my $Bottomer = '~'; # must sort after 'Z' and '9'
 
 =head1 CONSTRUCTORS
 
-=head2 new
-=head2 new(call_number_text, topper_character, bottomer_character) -- create a new object, optionally passing in the initial string, a "topper", and a "bottomer" (explained below)
+=head2 new([call_number_text, [topper_character, [bottomer_character]]]) -- create a new object, optionally passing in the initial string, a "topper", and a "bottomer" (explained below)
 
 =cut
 
@@ -148,9 +141,7 @@ sub new {
 
 =head1 BASIC ACCESSORS
 
-=head2 call_number
-
-=head2 call_number(call_number_text)
+=head2 call_number([call_number_text])
 
 The text of the call number we are dealing with.
 
@@ -162,9 +153,7 @@ sub call_number {
   return $self->{callno};
 }
 
-=head2 topper
-
-=head2 topper(character)
+=head2 topper([character])
 
 Specify which character occupies the 'always-sort-to-the-top' slots in the sort keys.  Defaults to the SPACE character, but can reasonably be anything with an ASCII value lower than 48 (i.e. the 'zero' character, '0').  This can function as either a class or instance method depending on need.
 
@@ -182,9 +171,7 @@ sub topper {
   }
 }
 
-=head2 bottomer
-
-=head2 bottomer(character)
+=head2 bottomer([character])
 
 Specify which character occupies the 'always-sort-to-the-bottom' slots in the sort keys.  Defaults to the TILDE character, but can reasonably be anything with an ASCII value higher than 90 (i.e. 'Z').  This can function as either a class or instance method depending on need.
 
@@ -268,7 +255,7 @@ sub components {
   return @return;
 }
 
-=head2 _normalize(string $lc, boolean $bottom, boolean $fulllength)
+=head2 _normalize(call_number_text)
 
 Base function to perform normalization.
 
@@ -305,9 +292,9 @@ sub _normalize {
   return join($topper, grep {/\S/} ($class, $c1, $c2, $c3, $extra));
 }
 
-=head2 normalize() -- normalize the callno in the current object as a sortable string
+=head2 normalize([call_number_text])
 
-=head2 normalize($lc) -- normalize the passed callno as a sortable string
+Normalize the stored or passed call number as a sortable string
 
 =cut
 
@@ -318,7 +305,9 @@ sub normalize {
   return $self->_normalize($lc)
 }
 
-=head2 start_of_range (alias for normalize)
+=head2 start_of_range([call_number_text])
+
+Alias for normalize
 
 =cut
 
@@ -327,7 +316,9 @@ sub start_of_range {
   return $self->normalize(@_);
 }
 
-=head2 end_of_range($lc) -- downshift an lc number so it represents the end of a range
+=head2 end_of_range([call_number_text])
+
+Downshift an lc number so it represents the end of a range
 
 =cut
 
@@ -339,7 +330,7 @@ sub end_of_range {
   return $self->_normalize($lc) . $bottomer;
 }
 
-=head2 toLongInt($lc, $num_digits)
+=head2 toLongInt(call_number_text, num_digits)
 
 Attempt to turn a call number into an integer value. Possibly useful for fast range checks, although obviously not perfectly accurate. Optional argument I<$num_digits> can be used to control the number of digits used, and therefore the precision of the results.
 
@@ -432,8 +423,6 @@ You can find documentation for this module with the perldoc command.
 You can also look for information at the Google Code page:
 
   http://code.google.com/p/library-callnumber-lc/
-
-=head1 ACKNOWLEDGEMENTS
 
 
 =head1 COPYRIGHT & LICENSE
