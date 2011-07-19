@@ -5,5 +5,6 @@ README
 lib/Library/CallNumber/LC.pm
 t/00-load.t
 t/01-basics.t
+t/t_Labels_split_lccn.t
 Makefile.PL
 META.yml

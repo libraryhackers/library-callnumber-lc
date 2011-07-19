@@ -5,7 +5,7 @@ use Module::Build;
 my $builder = Module::Build->new(
     module_name         => 'Library::CallNumber::LC',
     license             => 'perl',
-    dist_author         => 'Bill Dueber <dueberb@umich.edu>',
+    dist_author         => 'Daniel Wells <dbw2@calvin.edu>',
     dist_version_from   => 'lib/Library/CallNumber/LC.pm',
     requires => {
       'Math::BigInt' => 0,
