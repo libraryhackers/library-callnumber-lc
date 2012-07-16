@@ -1,5 +1,24 @@
 Revision history for Library-CallNumber-LC
 
+0.22    2012/05/01
+        -Clarify licensing (both same-as-Perl and BSD)
+
+0.21    2012/05/01
+        -Correct deprecated use of qw(...) as parentheses
+
+0.20    2011/07/19
+        -Move from fixed to variable length normalization.  This helps:
+            -Fix 2-digit decimal limitation (now unlimited)
+            -Sort cutters properly when number of digits exceeds 4
+                (now unlimited)
+            -Overall 27% reduction in sort-key length, on average
+        -Improved sorting of numbers in "extra" field
+        -Properly recognize numbers which subdivide a class
+            -(e.g. BX830 1545 .M3)
+        -Make characters used to force items up or down in the sort order
+            configurable (defaults to SPACE and TILDE)
+        -Add accessor for changing call number text in object instances
+
 0.10    2009/07/08
         Added "toLongInt" for possible use in a Trie field in Solr
         Added third argument to _normalize to force full-length range-start normalization (for use in above)

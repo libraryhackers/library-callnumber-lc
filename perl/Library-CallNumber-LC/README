@@ -8,20 +8,6 @@ Library::CallNumber::LC is mostly designed to do call number normalization, with
 
 Given the nature of generating normalized sort keys, compatibility between versions is NOT a goal, as any bug-fixes or features will likely require changing the key format.
 
-CHANGELOG
-
-0.20    -Move from fixed to variable length normalization.  This helps:
-            -Fix 2-digit decimal limitation (now unlimited)
-            -Sort cutters properly when number of digits exceeds 4
-                (now unlimited)
-            -Overall 27% reduction in sort-key length, on average
-        -Improved sorting of numbers in "extra" field
-        -Properly recognize numbers which subdivide a class
-            -(e.g. BX830 1545 .M3)
-        -Make characters used to force items up or down in the sort order
-            configurable (defaults to SPACE and TILDE)
-        -Add accessor for changing call number text in object instances
-
 INSTALLATION
 
 To install this module, run the following commands:

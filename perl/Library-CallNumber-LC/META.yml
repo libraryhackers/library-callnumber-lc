@@ -16,9 +16,9 @@ name: Library-CallNumber-LC
 provides:
   Library::CallNumber::LC:
     file: lib/Library/CallNumber/LC.pm
-    version: 0.20
+    version: 0.22
 requires:
   Math::BigInt: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.20
+version: 0.22
