@@ -83,7 +83,7 @@ my $lcregex = qr/^
         (\d+[stndrh]*)? # optional extra numbering including suffixes (1st, 2nd, etc.)
         \s*
         (?:               # optional cutter
-          \.? \s*     
+          (\.)? \s*     # optional decimal
           ([A-Z])      # cutter letter
           \s*
           (\d+ | \Z)?        # cutter numbers
@@ -132,7 +132,7 @@ sub new {
   $topper = $Topper if !defined($topper); # ZERO is false but might be a reasonable value, so we need this more specific check
   my $bottomer = shift || $Bottomer;
   my $self = {
-    callno => uc($lc),
+    callno => $lc,
     topper => $topper,
     bottomer => $bottomer
   };
@@ -230,7 +230,7 @@ sub components {
   return undef unless ($lc =~ $lcregex);
 
 
-  my ($alpha, $num, $dec, $othernum, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+  my ($alpha, $num, $dec, $othernum, $c1dec, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
 
   #combine stuff if need be
   
@@ -243,9 +243,10 @@ sub components {
   my $c2 = join('', $c2alpha, $c2num);
   my $c3 = join('', $c3alpha, $c3num);
   
-  $c1 = '.' . $c1 if ($c1 =~ /\S/);
   use warnings;
-  
+
+  $c1 = '.' . $c1 if $c1dec;
+
   my @return;
   foreach my $comp ($alpha, $num, $othernum, $c1, $c2, $c3, $extra) {
     $comp = '' unless (defined $comp);
@@ -272,7 +273,7 @@ sub _normalize {
 #  return undef if ($lc =~ $weird);
   return undef unless ($lc =~ $lcregex);
   
-  my ($alpha, $num, $dec, $othernum, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+  my ($alpha, $num, $dec, $othernum, $c1dec, $c1alpha, $c1num, $c2alpha, $c2num, $c3alpha, $c3num, $extra) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
 
   no warnings;
   my $class = $alpha;

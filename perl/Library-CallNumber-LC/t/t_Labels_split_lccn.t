@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 26;
 
 use Library::CallNumber::LC;
 
@@ -13,6 +13,7 @@ my $lccns = {
     'HE8700.7 .P6T44 1983' => [qw(HE 8700.7 .P6 T44 1983)],
     'BS2545.E8 H39 1996'   => [qw(BS 2545 .E8 H39 1996)],
     'NX512.S85 A4 2006'    => [qw(NX 512 .S85 A4 2006)],
+    'J 295.435 K56'        => [qw(J 295.435 K56)],
 };
 
 foreach my $lccn (sort keys %$lccns) {
