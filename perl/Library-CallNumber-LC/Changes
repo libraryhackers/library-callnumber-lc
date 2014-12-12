@@ -1,5 +1,9 @@
 Revision history for Library-CallNumber-LC
 
+0.23    2014/12/12
+        -Don't uppercase the callnumber on input
+        -Make the first cutter decimal optional (see new test case)
+
 0.22    2012/05/01
         -Clarify licensing (both same-as-Perl and BSD)
 

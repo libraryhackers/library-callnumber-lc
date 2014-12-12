@@ -8,3 +8,4 @@ t/01-basics.t
 t/t_Labels_split_lccn.t
 Makefile.PL
 META.yml
+META.json
