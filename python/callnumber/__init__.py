@@ -109,7 +109,7 @@ def normalize(lc, bottom=False):
     bottomnorm.pop()
 
     inds = range(1, 9)
-    inds.reverse()
+    inds = list(reversed(inds))
     for i in inds:
         end = topnorm.pop()
         if origs[i]:
