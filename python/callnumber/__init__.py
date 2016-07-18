@@ -124,7 +124,7 @@ class LC(object):
         try:
             self.denormalized = callno.upper()
         except AttributeError:
-            print "*** ERROR: '%s' not a string?" % (callno)
+            print("*** ERROR: '%s' not a string?" % (callno))
         self.normalized = normalize(callno)
 
     def __unicode__(self):
