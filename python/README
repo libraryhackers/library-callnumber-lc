@@ -31,7 +31,7 @@ Create an LC callnumber object, print out some properties:
     >>> lccn.denormalized
     'HE 8700.7 p6 t44 1983'
     >>> lccn.normalized
-    'HE 870070P600T440 000 1983'
+    'HE 8700700P600T440 000 1983'
     >>> lccn.components()
     ['HE', '8700.7', '.P6', 'T44', '1983']
     >>> lccn.components(include_blanks=True)
