@@ -62,7 +62,7 @@ def normalize(lc, bottom=False):
     (alpha, num, dec, c1alpha, c1num,
      c2alpha, c2num, c3alpha, c3num, extra) = origs
 
-    if (len(dec) > 2):
+    if (len(dec) > 3):
         return None
 
     if alpha and not (num or dec or c1alpha or c1num or c2alpha \
@@ -79,7 +79,7 @@ def normalize(lc, bottom=False):
     topnorm = [
         alpha + topspace * (3 - len(alpha)),
         num + topdigit * (4 - len(num)),
-        dec + topdigit * (2 - len(dec)),
+        dec + topdigit * (3 - len(dec)),
         c1alpha if c1alpha else topspace,
         c1num + topdigit * (3 - len(c1num)),
         c2alpha if c2alpha else topspace,
@@ -92,7 +92,7 @@ def normalize(lc, bottom=False):
     bottomnorm = [
         alpha + bottomspace * (3 - len(alpha)),
         num + bottomdigit * (4 - len(num)),
-        dec + bottomdigit * (2 - len(dec)),
+        dec + bottomdigit * (3 - len(dec)),
         c1alpha if c1alpha else bottomspace,
         c1num + bottomdigit * (3 - len(c1num)),
         c2alpha if c2alpha else bottomspace,
@@ -109,7 +109,7 @@ def normalize(lc, bottom=False):
     bottomnorm.pop()
 
     inds = range(1, 9)
-    inds.reverse()
+    inds = list(reversed(inds))
     for i in inds:
         end = topnorm.pop()
         if origs[i]:
@@ -124,7 +124,7 @@ class LC(object):
         try:
             self.denormalized = callno.upper()
         except AttributeError:
-            print "*** ERROR: '%s' not a string?" % (callno)
+            print("*** ERROR: '%s' not a string?" % (callno))
         self.normalized = normalize(callno)
 
     def __unicode__(self):
